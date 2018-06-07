@@ -23,6 +23,7 @@ tokens = [
 	'QUEBRA_LINHA',
 	'TIPO_BOOL',
 	'TIPO_VAR',
+	'NUM_FLOAT',
 	'STRING',
 	'NUMERO',
 	'ATRIBUIR',
@@ -44,12 +45,13 @@ t_QUEBRA_LINHA = r";+"
 t_TIPO_BOOL = r"(false)|(true)"
 t_TIPO_VAR = r"(int)|(float)|(bool)|(str)"
 t_NUMERO = r"[\d]+"
+t_NUM_FLOAT = r"[\d]+\.[\d]{0,5}"
 t_VARIAVEL = r"(var_)[\d]+"
 t_DIR_ROBO = r"(right)|(left)"
 t_MOVE_ROBO = r"(forward)|(backward)"
 
 def t_RESERVED(t):
-	r"(begin)|(end)|(start)|(off)|(right)|(left)|(stop)|(if)|(else)|(loop)|(break)|(print)"
+	r"(begin)|(end)|(start)|(off)|(stop)|(if)|(else)|(loop)|(break)|(print)"
 	t.type = reserved.get(t.value, 'RESERVED')
 	return t
 
@@ -144,7 +146,9 @@ def p_operacao(t):
 	'''
 
 def p_expressao_num(t):
-    'expressao : NUMERO'
+    '''expressao : NUMERO
+				| NUM_FLOAT
+	'''
 
 def p_expressao_var(t):
     'expressao : VARIAVEL'
@@ -172,6 +176,8 @@ def p_loop_robo_on(t):
 def p_comparacao(t):
     '''comparacao : VARIAVEL OP_RELACIONAL NUMERO
                 | VARIAVEL OP_RELACIONAL VARIAVEL
+				| VARIAVEL OP_RELACIONAL NUM_FLOAT
+				| VARIAVEL OP_RELACIONAL TIPO_BOOL
     '''
 
 def p_condicional(t):
@@ -220,7 +226,7 @@ def p_error(t):
 import ply.yacc as yacc
 parser = yacc.yacc()
 
-s = '''
+s3 = '''
 begin{
 	int var_0;
 	var_0 = 12 + var_1 - 10;
@@ -241,7 +247,7 @@ begin{
 }end
 '''
 
-s = '''
+s2 = '''
 begin{
 	start;
 	loop(true){
@@ -254,6 +260,43 @@ begin{
 				forward;
 			}
 		}
+	}
+	off;
+}end
+'''
+
+s = '''
+begin{
+	int var_0;
+    float var_1;
+    bool var_2;
+    str var_3;
+	var_0 = 1;
+    var_1 = 6.7777;
+    var_2 = true;
+	var_3 = ["aaaaa"];
+	start;
+	print ["TESTE"];
+	print 2;
+	print var_0;
+	loop(true){
+		forward;
+		if(var_0 == var_1){
+			stop;
+			break;
+		}
+        else{
+            loop(var_0 < 10){
+                right;
+                var_0 = var_0 + 1;
+            }
+            if(var_2 == false){
+                left;
+                left;
+                backward;
+            }
+        }
+		var_1 = var_1 + 1.2;
 	}
 	off;
 }end
